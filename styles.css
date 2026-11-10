@@ -218,3 +218,11 @@ h1 span { color: var(--lime); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }
+
+@keyframes capturePulse {
+  0% { box-shadow: 0 0 0 0 rgba(184,243,107,0), inset 0 0 0 rgba(184,243,107,0); }
+  35% { box-shadow: 0 0 0 4px rgba(184,243,107,.22), inset 0 0 55px rgba(184,243,107,.1); }
+  100% { box-shadow: 0 0 0 0 rgba(184,243,107,0), inset 0 0 0 rgba(184,243,107,0); }
+}
+.arena-frame.capture-flash { animation: capturePulse .42s ease-out; }
+@media (prefers-reduced-motion: reduce) { .arena-frame.capture-flash { animation: none; } }
