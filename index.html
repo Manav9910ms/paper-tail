@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1020" />
+  <meta name="description" content="Paper Tail — claim the grid, outsmart the rivals, and own the map." />
+  <title>Paper Tail — Claim your space</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="Paper Tail home">
+        <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span class="brand-name">paper<span>tail</span></span>
+      </a>
+      <div class="topbar-right">
+        <span class="live-pill"><i></i> ARCADE MODE</span>
+        <button class="icon-button" id="soundButton" type="button" aria-label="Toggle sound" title="Toggle sound">
+          <svg id="soundIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h4l5 4V6l-5 4H4Z"/><path d="M16 9.5a4 4 0 0 1 0 5M18.5 7a7.5 7.5 0 0 1 0 10"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <section class="intro">
+      <div>
+        <p class="eyebrow"><span class="eyebrow-line"></span> THE TERRITORY ARCADE</p>
+        <h1>Leave a mark.<br /><span>Own the map.</span></h1>
+        <p class="intro-copy">Draw your tail beyond your borders, close the loop, and claim the space. Just don't let anyone cut you off.</p>
+      </div>
+      <div class="personal-best">
+        <span class="best-label">PERSONAL BEST</span>
+        <strong id="bestValue">0.0<span>%</span></strong>
+        <span class="best-foot">Your biggest territory</span>
+      </div>
+    </section>
+
+    <section class="game-layout" aria-label="Paper Tail game">
+      <div class="arena-column">
+        <div class="arena-topline">
+          <div class="arena-title"><span class="status-dot"></span><span id="arenaStatus">READY TO PLAY</span></div>
+          <div class="arena-actions">
+            <button class="small-button" id="pauseButton" type="button" disabled><span class="pause-glyph">Ⅱ</span> Pause</button>
+            <button class="small-button restart-button" id="restartButton" type="button" title="Restart game">↻ <span>Restart</span></button>
+          </div>
+        </div>
+
+        <div class="arena-frame" id="arenaFrame">
+          <canvas id="gameCanvas" width="960" height="640" aria-label="Game arena. Use arrow keys or WASD to move."></canvas>
+          <div class="arena-vignette" aria-hidden="true"></div>
+          <div class="arena-hud">
+            <div class="hud-chip"><span class="hud-dot you-dot"></span><span>YOU</span><strong id="hudPercent">3.0%</strong></div>
+            <div class="hud-chip rival-chip"><span class="hud-dot rival-dot"></span><span>RIVALS</span><strong id="rivalCount">4</strong></div>
+          </div>
+          <div class="center-overlay" id="startOverlay">
+            <div class="overlay-card">
+              <div class="overlay-icon"><span class="tail-orbit"></span><span class="overlay-cursor">↗</span></div>
+              <p class="overlay-kicker">YOUR GRID. YOUR RULES.</p>
+              <h2>Ready to claim<br />your corner?</h2>
+              <p class="overlay-description">Make a loop outside your territory. Every second away from home is a chance to grow — or get cut off.</p>
+              <button class="primary-button" id="startButton" type="button">Start game <span>↗</span></button>
+              <span class="overlay-hint">WASD / ARROW KEYS TO MOVE</span>
+            </div>
+          </div>
+          <div class="center-overlay hidden" id="pauseOverlay">
+            <div class="overlay-card compact-card">
+              <div class="pause-symbol">Ⅱ</div>
+              <p class="overlay-kicker">TAKE YOUR TIME</p>
+              <h2>Game paused</h2>
+              <p class="overlay-description">Your territory is safe. Pick up where you left off.</p>
+              <button class="primary-button" id="resumeButton" type="button">Resume <span>▶</span></button>
+            </div>
+          </div>
+          <div class="center-overlay hidden" id="gameOverOverlay">
+            <div class="overlay-card compact-card">
+              <div class="gameover-icon">✦</div>
+              <p class="overlay-kicker">TRAIL ENDED</p>
+              <h2 id="gameOverTitle">You've been caught.</h2>
+              <p class="overlay-description" id="gameOverCopy">Every great run starts with another try.</p>
+              <div class="run-result"><span>FINAL TERRITORY</span><strong id="finalPercent">0.0%</strong></div>
+              <button class="primary-button" id="playAgainButton" type="button">Play again <span>↗</span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="arena-footer">
+          <div class="legend">
+            <span><i class="legend-square you-square"></i> Your territory</span>
+            <span><i class="legend-square rival-square"></i> Rivals</span>
+            <span><i class="legend-line"></i> Your tail</span>
+          </div>
+          <span class="map-label">SECTOR 01 <b>·</b> OPEN GRID</span>
+        </div>
+      </div>
+
+      <aside class="side-column">
+        <section class="stat-card territory-card">
+          <div class="card-heading"><span>TERRITORY</span><span class="heading-icon">↗</span></div>
+          <div class="territory-number"><strong id="territoryValue">3.0</strong><span>%</span></div>
+          <div class="progress-track"><div class="progress-fill" id="territoryProgress" style="width:3%"></div></div>
+          <div class="progress-caption"><span>MAP CONTROL</span><strong id="cellsValue">0 cells</strong></div>
+        </section>
+
+        <section class="stat-card score-card">
+          <div class="card-heading"><span>RUN SCORE</span><span class="heading-icon">⌁</span></div>
+          <div class="score-number" id="scoreValue">0000</div>
+          <div class="score-caption">Each captured tile adds to your score.</div>
+        </section>
+
+        <section class="tip-card">
+          <div class="tip-head"><span class="tip-icon">✳</span><span>FIELD NOTE 01</span></div>
+          <h3>Don't get<br />too greedy.</h3>
+          <p>Your tail is vulnerable outside your territory. Close a loop to secure the area before a rival crosses it.</p>
+          <div class="tip-rule"></div>
+          <span class="tip-foot">A SMALL WIN IS STILL A WIN.</span>
+        </section>
+
+        <section class="controls-card">
+          <div class="card-heading"><span>CONTROLS</span><span class="heading-icon">⌘</span></div>
+          <div class="control-row"><span>MOVE</span><span class="keycap">W</span><span class="keycap">A</span><span class="keycap">S</span><span class="keycap">D</span></div>
+          <div class="control-row"><span>OR</span><span class="keycap wide-key">←</span><span class="keycap wide-key">↑</span><span class="keycap wide-key">↓</span><span class="keycap wide-key">→</span></div>
+          <div class="mobile-controls" aria-label="Touch controls">
+            <button type="button" data-dir="up" aria-label="Move up">↑</button>
+            <div><button type="button" data-dir="left" aria-label="Move left">←</button><button type="button" data-dir="down" aria-label="Move down">↓</button><button type="button" data-dir="right" aria-label="Move right">→</button></div>
+          </div>
+        </section>
+      </aside>
+    </section>
+
+    <footer class="page-footer">
+      <span>© 2026 PAPER TAIL ARCADE</span>
+      <span>DRAW. CLOSE. CONQUER.</span>
+      <span class="footer-version">BUILD 01.0</span>
+    </footer>
+  </main>
+  <script src="./game.js"></script>
+</body>
+</html>
