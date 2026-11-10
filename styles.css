@@ -226,3 +226,58 @@ h1 span { color: var(--lime); }
 }
 .arena-frame.capture-flash { animation: capturePulse .42s ease-out; }
 @media (prefers-reduced-motion: reduce) { .arena-frame.capture-flash { animation: none; } }
+
+
+/* V2: live map, player trail palettes and persistent career stats */
+.minimap-wrap {
+  position: absolute; z-index: 3; right: 13px; bottom: 13px;
+  width: 154px; padding: 7px; border: 1px solid rgba(190,207,239,.22);
+  border-radius: 8px; background: rgba(7,13,27,.78); backdrop-filter: blur(8px);
+  box-shadow: 0 7px 22px rgba(0,0,0,.24); line-height: normal;
+}
+.minimap-heading {
+  display: flex; align-items: center; justify-content: space-between;
+  margin: 0 2px 5px; color: #a8b5ca; font: 8px var(--mono); letter-spacing: .1em;
+}
+.minimap-heading b { color: var(--lime); font-size: 7px; font-weight: 400; }
+#miniMap { display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; border-radius: 3px; image-rendering: pixelated; }
+.skin-card {
+  border: 1px solid var(--line); border-radius: 10px;
+  background: linear-gradient(145deg, rgba(22,32,54,.96), rgba(16,25,44,.96));
+  padding: 14px 16px;
+}
+.skin-caption { color: #7786a1; font-size: 9px; margin: 8px 0 10px; }
+.skin-options { display: flex; align-items: center; gap: 9px; }
+.skin-swatch {
+  width: 29px; height: 29px; display: grid; place-items: center;
+  padding: 0; border-radius: 50%; border: 1px solid rgba(220,230,248,.2);
+  background: rgba(255,255,255,.04); cursor: pointer; transition: transform .16s ease, border-color .16s ease;
+}
+.skin-swatch i { width: 15px; height: 15px; border-radius: 50%; display: block; }
+.skin-swatch[data-skin="lime"] i { background: #b8f36b; box-shadow: 0 0 10px rgba(184,243,107,.35); }
+.skin-swatch[data-skin="aqua"] i { background: #57e0d0; box-shadow: 0 0 10px rgba(87,224,208,.35); }
+.skin-swatch[data-skin="violet"] i { background: #aa91ff; box-shadow: 0 0 10px rgba(170,145,255,.35); }
+.skin-swatch[data-skin="coral"] i { background: #ff8d72; box-shadow: 0 0 10px rgba(255,141,114,.35); }
+.skin-swatch:hover { transform: translateY(-2px); }
+.skin-swatch.active { border-color: #e9f7d8; box-shadow: 0 0 0 2px rgba(184,243,107,.13); }
+.career-card { padding-top: 13px; padding-bottom: 13px; }
+.career-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 13px; }
+.career-metrics div { display: flex; flex-direction: column; gap: 4px; }
+.career-metrics strong { color: #f1f5ff; font: 17px var(--mono); }
+.career-metrics span { color: #75849f; font: 7px var(--mono); letter-spacing: .08em; }
+@media (max-width: 760px) {
+  .minimap-wrap { right: 8px; bottom: 8px; width: 116px; padding: 5px; }
+  .skin-card, .career-card { min-height: 105px; }
+  .skin-card { padding: 12px; }
+  .career-card { padding: 12px; }
+  .skin-swatch { width: 26px; height: 26px; }
+}
+@media (max-width: 480px) {
+  .minimap-wrap { width: 92px; right: 6px; bottom: 6px; padding: 4px; border-radius: 5px; }
+  .minimap-heading { font-size: 6px; margin-bottom: 3px; }
+  .minimap-heading b { font-size: 6px; }
+  .skin-options { gap: 6px; }
+  .skin-swatch { width: 23px; height: 23px; }
+  .skin-swatch i { width: 12px; height: 12px; }
+  .career-metrics strong { font-size: 14px; }
+}
