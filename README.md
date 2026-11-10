@@ -27,13 +27,16 @@ No build step or dependencies are required.
 - Return to your territory to close the loop and capture enclosed tiles.
 - Rival territory can be captured too when enclosed by your loop.
 - Rival trails can cut your tail. Hitting the arena boundary or your own tail ends the run.
-- Your best territory percentage is saved locally in your browser.
+- Your best territory percentage, selected skin, and career record (runs, wins and tiles owned at the end of each run) are saved locally in your browser.
+- The live minimap shows the full arena, territories, tails and player positions.
+- Choose from four player trail colours: lime, aqua, violet and coral.
+- Rival bots use a shortest-safe-route search to return to their territory after expanding.
 
 ## Project files
 
 - `index.html` — page structure and game HUD
 - `styles.css` — responsive visual design
-- `game.js` — canvas renderer, movement, territory flood-fill, rival AI, controls and local best score
+- `game.js` — canvas renderer, minimap, movement, territory flood-fill, rival navigation, skins, controls and local records
 
 ## Deployment
 
