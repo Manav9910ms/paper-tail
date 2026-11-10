@@ -22,6 +22,12 @@
     4: "#ffe0b6",
     5: "#e1d4ff"
   };
+  const SKINS = {
+    lime: { color: "#b8f36b", glow: "#e2ffb6" },
+    aqua: { color: "#57e0d0", glow: "#b7fff5" },
+    violet: { color: "#aa91ff", glow: "#ded4ff" },
+    coral: { color: "#ff8d72", glow: "#ffd0c4" }
+  };
   const DIRECTIONS = {
     up: { x: 0, y: -1, name: "up" },
     right: { x: 1, y: 0, name: "right" },
@@ -32,6 +38,8 @@
 
   const canvas = document.getElementById("gameCanvas");
   const ctx = canvas.getContext("2d");
+  const miniMap = document.getElementById("miniMap");
+  const miniCtx = miniMap ? miniMap.getContext("2d") : null;
   const startOverlay = document.getElementById("startOverlay");
   const pauseOverlay = document.getElementById("pauseOverlay");
   const gameOverOverlay = document.getElementById("gameOverOverlay");
@@ -54,7 +62,10 @@
     bestValue: document.getElementById("bestValue"),
     finalPercent: document.getElementById("finalPercent"),
     gameOverTitle: document.getElementById("gameOverTitle"),
-    gameOverCopy: document.getElementById("gameOverCopy")
+    gameOverCopy: document.getElementById("gameOverCopy"),
+    careerRuns: document.getElementById("careerRuns"),
+    careerWins: document.getElementById("careerWins"),
+    careerCells: document.getElementById("careerCells")
   };
 
   let land = new Uint8Array(TOTAL);
@@ -64,6 +75,9 @@
   let gameState = "ready";
   let score = 0;
   let best = readBest();
+  let careerStats = readCareerStats();
+  let selectedSkin = readSkin();
+  let runRecorded = false;
   let soundOn = false;
   let audioContext = null;
   let tickCount = 0;
@@ -85,6 +99,70 @@
       // The game remains playable when storage is unavailable.
     }
     ui.bestValue.innerHTML = best.toFixed(1) + "<span>%</span>";
+  }
+
+  function readCareerStats() {
+    try {
+      const saved = JSON.parse(window.localStorage.getItem("paperTailCareer") || "{}");
+      return {
+        runs: Math.max(0, Number(saved.runs) || 0),
+        wins: Math.max(0, Number(saved.wins) || 0),
+        cells: Math.max(0, Number(saved.cells) || 0)
+      };
+    } catch (_) {
+      return { runs: 0, wins: 0, cells: 0 };
+    }
+  }
+
+  function saveCareerStats() {
+    try {
+      window.localStorage.setItem("paperTailCareer", JSON.stringify(careerStats));
+    } catch (_) {
+      // Local records are optional; game play continues without storage.
+    }
+    updateCareerHud();
+  }
+
+  function updateCareerHud() {
+    if (ui.careerRuns) ui.careerRuns.textContent = careerStats.runs.toLocaleString();
+    if (ui.careerWins) ui.careerWins.textContent = careerStats.wins.toLocaleString();
+    if (ui.careerCells) ui.careerCells.textContent = careerStats.cells.toLocaleString();
+  }
+
+  function recordRun(won) {
+    if (runRecorded) return;
+    runRecorded = true;
+    careerStats.runs += 1;
+    careerStats.cells += territoryCount(1);
+    if (won) careerStats.wins += 1;
+    saveCareerStats();
+  }
+
+  function readSkin() {
+    try {
+      const saved = window.localStorage.getItem("paperTailSkin");
+      return SKINS[saved] ? saved : "lime";
+    } catch (_) {
+      return "lime";
+    }
+  }
+
+  function applySkin(name) {
+    if (!SKINS[name]) return;
+    selectedSkin = name;
+    COLORS[1] = SKINS[name].color;
+    GLOW[1] = SKINS[name].glow;
+    document.querySelectorAll(".skin-swatch").forEach(button => {
+      const active = button.dataset.skin === name;
+      button.classList.toggle("active", active);
+      button.setAttribute("aria-pressed", String(active));
+    });
+    try {
+      window.localStorage.setItem("paperTailSkin", name);
+    } catch (_) {
+      // Skin selection is still active for this session.
+    }
+    draw();
   }
 
   function indexOf(x, y) {
@@ -114,7 +192,8 @@
       alive: true,
       respawnAt: 0,
       origin: null,
-      stepsSinceTurn: 0
+      stepsSinceTurn: 0,
+      targetLength: 7 + Math.floor(Math.random() * 6)
     };
   }
 
@@ -163,6 +242,7 @@
 
   function startGame() {
     stopTimer();
+    runRecorded = false;
     initializeWorld();
     gameState = "running";
     startOverlay.classList.add("hidden");
@@ -207,10 +287,17 @@
     pauseButton.disabled = true;
     const pct = territoryPercent(1);
     ui.finalPercent.textContent = pct.toFixed(1) + "%";
-    ui.gameOverTitle.textContent = reason === "wall" ? "You hit the edge." : "Your trail was cut.";
+    ui.gameOverTitle.textContent = reason === "wall"
+      ? "You hit the edge."
+      : reason === "self"
+        ? "You crossed your own tail."
+        : "Your trail was cut.";
     ui.gameOverCopy.textContent = reason === "wall"
       ? "The grid has an edge. Your next run can go further."
-      : "A rival crossed your exposed tail. Plan a shorter loop and strike back.";
+      : reason === "self"
+        ? "Your trail looped back on itself. Leave a little more room next time."
+        : "A rival crossed your exposed tail. Plan a shorter loop and strike back.";
+    recordRun(false);
     setStatus("RUN COMPLETE", false);
     saveBest(pct);
     gameOverOverlay.classList.remove("hidden");
@@ -266,6 +353,7 @@
     }
     entity.trail.length = 0;
     entity.origin = null;
+    if (entity.id !== 1) entity.targetLength = 7 + Math.floor(Math.random() * 6);
 
     if (entity.id === 1) {
       score += gained;
@@ -282,6 +370,7 @@
         ui.finalPercent.textContent = "100.0%";
         ui.gameOverTitle.textContent = "The whole map is yours!";
         ui.gameOverCopy.textContent = "A perfect run. You claimed every last tile.";
+        recordRun(true);
         saveBest(100);
         setStatus("MAP CONQUERED", false);
         gameOverOverlay.classList.remove("hidden");
@@ -320,6 +409,7 @@
     ui.scoreValue.textContent = String(score).padStart(4, "0");
     ui.rivalCount.textContent = String(rivals.filter(r => r.alive).length);
     ui.bestValue.innerHTML = best.toFixed(1) + "<span>%</span>";
+    updateCareerHud();
   }
 
   function queueDirection(directionName) {
@@ -396,17 +486,72 @@
     }
   }
 
-  function chooseRivalDirection(rival) {
-    if (rival.trail.length > 0 && rival.origin) {
-      if (rival.trail.length <= 5) return;
-      const candidates = DIR_LIST.filter(direction => !opposite(direction, rival.dir));
-      candidates.sort((a, b) => {
-        const da = Math.abs(rival.x + a.x - rival.origin.x) + Math.abs(rival.y + a.y - rival.origin.y);
-        const db = Math.abs(rival.x + b.x - rival.origin.x) + Math.abs(rival.y + b.y - rival.origin.y);
+  function findReturnDirection(rival) {
+    const start = indexOf(rival.x, rival.y);
+    const queue = new Int32Array(TOTAL);
+    const visited = new Uint8Array(TOTAL);
+    const firstStep = new Int8Array(TOTAL);
+    firstStep.fill(-1);
+    const blocked = new Set(rival.trail.map(point => indexOf(point.x, point.y)));
+    let head = 0;
+    let tail = 0;
+    queue[tail++] = start;
+    visited[start] = 1;
+
+    while (head < tail) {
+      const current = queue[head++];
+      const x = current % COLS;
+      const y = Math.floor(current / COLS);
+      const directions = DIR_LIST.slice().sort((a, b) => {
+        const da = Math.abs(x + a.x - rival.origin.x) + Math.abs(y + a.y - rival.origin.y);
+        const db = Math.abs(x + b.x - rival.origin.x) + Math.abs(y + b.y - rival.origin.y);
         return da - db;
       });
-      const bestDirection = candidates.find(direction => inBounds(rival.x + direction.x, rival.y + direction.y));
-      if (bestDirection) rival.dir = bestDirection;
+
+      for (let d = 0; d < directions.length; d += 1) {
+        const direction = directions[d];
+        if (current === start && opposite(direction, rival.dir)) continue;
+        const nx = x + direction.x;
+        const ny = y + direction.y;
+        if (!inBounds(nx, ny)) continue;
+        const next = indexOf(nx, ny);
+        if (visited[next] || blocked.has(next)) continue;
+        const first = current === start ? DIR_LIST.indexOf(direction) : firstStep[current];
+        if (land[next] === rival.id) return DIR_LIST[first];
+        visited[next] = 1;
+        firstStep[next] = first;
+        queue[tail++] = next;
+      }
+    }
+    return null;
+  }
+
+  function chooseRivalDirection(rival) {
+    if (rival.trail.length > 0 && rival.origin) {
+      const nextX = rival.x + rival.dir.x;
+      const nextY = rival.y + rival.dir.y;
+      const nextIndex = inBounds(nextX, nextY) ? indexOf(nextX, nextY) : -1;
+      const wouldLoop = nextIndex >= 0 && rival.trail.some(point => point.x === nextX && point.y === nextY);
+      const shouldReturn = rival.trail.length >= rival.targetLength ||
+        !inBounds(nextX, nextY) || wouldLoop;
+
+      if (shouldReturn) {
+        const returnDirection = findReturnDirection(rival);
+        if (returnDirection) rival.dir = returnDirection;
+        return;
+      }
+
+      if (Math.random() < 0.12) {
+        const expansionDirections = DIR_LIST.filter(direction => {
+          if (opposite(direction, rival.dir)) return false;
+          const x = rival.x + direction.x;
+          const y = rival.y + direction.y;
+          return inBounds(x, y) &&
+            land[indexOf(x, y)] !== rival.id &&
+            !rival.trail.some(point => point.x === x && point.y === y);
+        });
+        if (expansionDirections.length) rival.dir = randomItem(expansionDirections);
+      }
       return;
     }
 
@@ -418,7 +563,7 @@
       return inBounds(x, y) && land[indexOf(x, y)] !== rival.id && !opposite(direction, rival.dir);
     });
 
-    if (exitDirections.length > 0 && Math.random() < 0.075) {
+    if (exitDirections.length > 0 && Math.random() < 0.10) {
       rival.dir = randomItem(exitDirections);
       return;
     }
@@ -503,6 +648,7 @@
     rival.trail = [];
     rival.alive = true;
     rival.origin = null;
+    rival.targetLength = 7 + Math.floor(Math.random() * 6);
     paintPatch(point.x, point.y, 6, rival.id);
     updateHud();
   }
@@ -590,12 +736,39 @@
     ctx.restore();
   }
 
+  function drawMiniMap() {
+    if (!miniCtx) return;
+    const cellW = miniMap.width / COLS;
+    const cellH = miniMap.height / ROWS;
+    miniCtx.clearRect(0, 0, miniMap.width, miniMap.height);
+    for (let y = 0; y < ROWS; y += 1) {
+      for (let x = 0; x < COLS; x += 1) {
+        const owner = land[indexOf(x, y)];
+        miniCtx.fillStyle = owner === 0 ? "#263650" : COLORS[owner];
+        miniCtx.fillRect(x * cellW, y * cellH, Math.ceil(cellW), Math.ceil(cellH));
+      }
+    }
+    for (const entity of [...rivals, player]) {
+      if (!entity || !entity.alive) continue;
+      miniCtx.fillStyle = GLOW[entity.id];
+      for (const point of entity.trail) {
+        miniCtx.fillRect(point.x * cellW, point.y * cellH, Math.ceil(cellW), Math.ceil(cellH));
+      }
+      miniCtx.fillStyle = "#ffffff";
+      miniCtx.fillRect(entity.x * cellW - 1, entity.y * cellH - 1, cellW + 2, cellH + 2);
+    }
+    miniCtx.strokeStyle = "rgba(255,255,255,.45)";
+    miniCtx.lineWidth = 2;
+    miniCtx.strokeRect(1, 1, miniMap.width - 2, miniMap.height - 2);
+  }
+
   function draw() {
     drawGrid();
     for (const rival of rivals) drawTrail(rival);
     drawTrail(player);
     for (const rival of rivals) drawHead(rival);
     drawHead(player);
+    drawMiniMap();
   }
 
   function playTone(frequency, duration, type) {
@@ -685,11 +858,17 @@
     });
   });
 
+  document.querySelectorAll(".skin-swatch").forEach(button => {
+    button.addEventListener("click", () => applySkin(button.dataset.skin));
+  });
+
   document.addEventListener("visibilitychange", () => {
     if (document.hidden && gameState === "running") pauseGame();
   });
 
   ui.bestValue.innerHTML = best.toFixed(1) + "<span>%</span>";
+  updateCareerHud();
+  applySkin(selectedSkin);
   initializeWorld();
   setStatus("READY TO PLAY", false);
 
