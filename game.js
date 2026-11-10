@@ -162,7 +162,7 @@
     } catch (_) {
       // Skin selection is still active for this session.
     }
-    draw();
+    if (player) draw();
   }
 
   function indexOf(x, y) {
