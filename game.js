@@ -398,6 +398,7 @@
 
   function chooseRivalDirection(rival) {
     if (rival.trail.length > 0 && rival.origin) {
+      if (rival.trail.length <= 5) return;
       const candidates = DIR_LIST.filter(direction => !opposite(direction, rival.dir));
       candidates.sort((a, b) => {
         const da = Math.abs(rival.x + a.x - rival.origin.x) + Math.abs(rival.y + a.y - rival.origin.y);
