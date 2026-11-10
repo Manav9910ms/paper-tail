@@ -56,6 +56,10 @@
             <div class="hud-chip"><span class="hud-dot you-dot"></span><span>YOU</span><strong id="hudPercent">3.0%</strong></div>
             <div class="hud-chip rival-chip"><span class="hud-dot rival-dot"></span><span>RIVALS</span><strong id="rivalCount">4</strong></div>
           </div>
+          <div class="minimap-wrap" aria-label="Live minimap">
+            <div class="minimap-heading"><span>MAP</span><b>LIVE</b></div>
+            <canvas id="miniMap" width="288" height="192"></canvas>
+          </div>
           <div class="center-overlay" id="startOverlay">
             <div class="overlay-card">
               <div class="overlay-icon"><span class="tail-orbit"></span><span class="overlay-cursor">↗</span></div>
@@ -111,6 +115,26 @@
           <div class="score-caption">Each captured tile adds to your score.</div>
         </section>
 
+        <section class="skin-card">
+          <div class="card-heading"><span>YOUR TRAIL</span><span class="heading-icon">✳</span></div>
+          <p class="skin-caption">Pick a player colour</p>
+          <div class="skin-options" role="group" aria-label="Choose player colour">
+            <button class="skin-swatch active" type="button" data-skin="lime" aria-label="Lime skin" aria-pressed="true"><i></i></button>
+            <button class="skin-swatch" type="button" data-skin="aqua" aria-label="Aqua skin" aria-pressed="false"><i></i></button>
+            <button class="skin-swatch" type="button" data-skin="violet" aria-label="Violet skin" aria-pressed="false"><i></i></button>
+            <button class="skin-swatch" type="button" data-skin="coral" aria-label="Coral skin" aria-pressed="false"><i></i></button>
+          </div>
+        </section>
+
+        <section class="stat-card career-card">
+          <div class="card-heading"><span>CAREER RECORD</span><span class="heading-icon">⌁</span></div>
+          <div class="career-metrics">
+            <div><strong id="careerRuns">0</strong><span>RUNS</span></div>
+            <div><strong id="careerWins">0</strong><span>WINS</span></div>
+            <div><strong id="careerCells">0</strong><span>TILES</span></div>
+          </div>
+        </section>
+
         <section class="tip-card">
           <div class="tip-head"><span class="tip-icon">✳</span><span>FIELD NOTE 01</span></div>
           <h3>Don't get<br />too greedy.</h3>
@@ -134,7 +158,7 @@
     <footer class="page-footer">
       <span>© 2026 PAPER TAIL ARCADE</span>
       <span>DRAW. CLOSE. CONQUER.</span>
-      <span class="footer-version">BUILD 01.0</span>
+      <span class="footer-version">BUILD 02.0</span>
     </footer>
   </main>
   <script src="./game.js"></script>
